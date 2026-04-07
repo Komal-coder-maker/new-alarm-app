@@ -457,7 +457,7 @@
 
     
     <div id="alarmList" class="alarm-list">
-        <div class="empty-state"> No alarms yet<br>Click + ADD NEW ALARM</div>
+       <div class="empty-state">🔔 No Alarm Set<br>➕ Tap + to Add New Alarm</div>
     </div>
 </div>
 
@@ -580,7 +580,7 @@
         const container = document.getElementById('alarmList');
         
         if (alarms.length === 0) {
-            container.innerHTML = '<div class="empty-state">📭 No alarms yet<br>Click + ADD NEW ALARM</div>';
+            container.innerHTML = '<div class="empty-state"> 🔔 No alarms yet<br>Click + ADD NEW ALARM</div>';
             return;
         }
         
