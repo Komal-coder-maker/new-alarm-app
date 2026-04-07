@@ -477,18 +477,22 @@
             <button class="modal-day-btn" data-day="sun">Sun</button>
             <button class="modal-day-btn everyday-modal-btn" onclick="selectEverydayModal()">Everyday</button>
         </div>
-      <select id="modalRingtone" class="modal-ringtone" onchange="previewRingtone()">
-    <option value="realalarm">⏰ Real Alarm Clock</option>
-    <option value="classicclock">🕰️ Classic Grandfather Clock</option>
+     <select id="modalRingtone" class="modal-ringtone" onchange="previewRingtone()">
+    <option value="realalarm">⏰ Real Alarm (Loud)</option>
+    <option value="iphone">📱 iPhone Alarm</option>
+    <option value="samsung">📱 Samsung Alarm</option>
+    <option value="cock">🐓 Cock Sound </option>
+    <option value="siren">🚨 Loud Siren</option>
+    <option value="bass"> 🔔Heavy Bell</option>
     <option value="guitar">🎸 Acoustic Guitar</option>
     <option value="piano">🎹 Grand Piano</option>
-    <option value="birds">🐦 Birds & Nature</option>
-    <option value="digital">📱 Modern Digital</option>
-    <option value="morningchime">🔔 Morning Chime</option>
-    <option value="sunrise">🌅 Sunrise Melody</option>
-    <option value="dreamy">💭 Dreamy Piano</option>
-    <option value="energetic">⚡ Energetic Beat</option>
+    <option value="birds">🐦 Birds Nature</option>
 </select>
+<!-- Custom Ringtone Upload Button -->
+<div style="margin-top: 10px; margin-bottom: 20px;">
+    <input type="file" id="customRingtone" accept="audio/*" style="display: none;" onchange="uploadCustomRingtone()">
+    <button type="button" onclick="document.getElementById('customRingtone').click()" style="width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 25px; cursor: pointer;">📁 Upload Custom Ringtone</button>
+</div>
 
         <div class="modal-buttons">
             <button class="save-btn" onclick="saveAlarmFromModal()">Save</button>
@@ -562,16 +566,16 @@
 
   function getRingtoneName(type) {
     const names = { 
-        'realalarm': '⏰ Real Alarm Clock',
-        'classicclock': '🕰️ Classic Grandfather Clock',
+        'realalarm': '⏰ Real Alarm (Loud)',
+        'iphone': '📱 iPhone Alarm',
+        'samsung': '📱 Samsung Alarm',
+        'cock': '🐓 Cock Sound (Murga)',
+        'siren': '🚨 Loud Siren',
+        'bass': '🔊 Heavy Bass',
         'guitar': '🎸 Acoustic Guitar',
         'piano': '🎹 Grand Piano',
-        'birds': '🐦 Birds & Nature',
-        'digital': '📱 Modern Digital',
-        'morningchime': '🔔 Morning Chime',
-        'sunrise': '🌅 Sunrise Melody',
-        'dreamy': '💭 Dreamy Piano',
-        'energetic': '⚡ Energetic Beat'
+        'birds': '🐦 Birds Nature',
+        'custom': '🎵 Custom Ringtone'
     };
     return names[type] || 'Real Alarm Clock';
 }
@@ -769,42 +773,164 @@ function playRingtoneByType(type) {
         audioContext.resume();
     }
     
-    const now = audioContext.currentTime;
-    
     const ringtones = {
-        // 🎸 REAL GUITAR - Fingerstyle acoustic
-        'guitar': () => {
-            const guitarNotes = [
-                { freq: 196.00, duration: 0.3 }, // G3
-                { freq: 246.94, duration: 0.3 }, // B3
-                { freq: 293.66, duration: 0.4 }, // D4
-                { freq: 329.63, duration: 0.4 }, // E4
-                { freq: 293.66, duration: 0.3 }, // D4
-                { freq: 246.94, duration: 0.3 }, // B3
-                { freq: 196.00, duration: 0.8 }  // G3
-            ];
-            playMelody(guitarNotes, 0.3);
+        // 🐓 COCK SOUND - Natural Murga "Kukduku"
+'cock': () => {
+    const playKukduku = () => {
+        if (!ringingAlarmId && !window.isPreviewing) return;
+        
+        const now = audioContext.currentTime;
+        
+        // Kuk
+        const osc1 = audioContext.createOscillator();
+        const gain1 = audioContext.createGain();
+        osc1.connect(gain1);
+        gain1.connect(audioContext.destination);
+        osc1.frequency.value = 300;
+        gain1.gain.value = 0.8;
+        osc1.type = 'square';
+        osc1.start();
+        gain1.gain.exponentialRampToValueAtTime(0.00001, now + 0.1);
+        osc1.stop(now + 0.1);
+        
+        // Du (after short pause)
+        setTimeout(() => {
+            if (!ringingAlarmId && !window.isPreviewing) return;
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            osc2.frequency.value = 500;
+            gain2.gain.value = 0.85;
+            osc2.type = 'square';
+            osc2.start();
+            gain2.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.12);
+            osc2.stop(audioContext.currentTime + 0.12);
+        }, 120);
+        
+        // Ku (last part)
+        setTimeout(() => {
+            if (!ringingAlarmId && !window.isPreviewing) return;
+            const osc3 = audioContext.createOscillator();
+            const gain3 = audioContext.createGain();
+            osc3.connect(gain3);
+            gain3.connect(audioContext.destination);
+            osc3.frequency.value = 720;
+            gain3.gain.value = 0.9;
+            osc3.type = 'square';
+            osc3.start();
+            gain3.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.3);
+            osc3.stop(audioContext.currentTime + 0.3);
+        }, 250);
+    };
+    
+    // Repeat 3 times
+    playKukduku();
+    setTimeout(() => playKukduku(), 1500);
+    setTimeout(() => playKukduku(), 3000);
+},
+        
+        // 🚨 LOUD SIREN
+        'siren': () => {
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    if (!ringingAlarmId && !window.isPreviewing) return;
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    const freq = 600 + (i % 2 === 0 ? 0 : 500);
+                    osc.frequency.value = freq;
+                    gain.gain.value = 0.9;
+                    osc.type = 'sawtooth';
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.2);
+                    osc.stop(audioContext.currentTime + 0.2);
+                }, i * 180);
+            }
         },
         
-        // 🎹 REAL PIANO - Grand piano sound
-        'piano': () => {
-            const pianoNotes = [
-                { freq: 261.63, duration: 0.4 }, // C4
-                { freq: 293.66, duration: 0.3 }, // D4
-                { freq: 329.63, duration: 0.3 }, // E4
-                { freq: 349.23, duration: 0.4 }, // F4
-                { freq: 392.00, duration: 0.4 }, // G4
-                { freq: 349.23, duration: 0.3 }, // F4
-                { freq: 329.63, duration: 0.3 }, // E4
-                { freq: 293.66, duration: 0.4 }, // D4
-                { freq: 261.63, duration: 0.8 }  // C4
-            ];
-            playMelody(pianoNotes, 0.35, 'triangle');
+     // 🔔 CLASSIC BELL RING - Real temple/school bell
+'bell': () => {
+    const bellFreqs = [1046.50, 1174.66, 1318.52, 1396.91, 1567.98];
+    
+    for (let i = 0; i < bellFreqs.length; i++) {
+        setTimeout(() => {
+            if (!ringingAlarmId && !window.isPreviewing) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = bellFreqs[i];
+            gain.gain.value = 0.7 - (i * 0.05);
+            osc.type = 'sine';
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.4);
+            osc.stop(audioContext.currentTime + 0.4);
+        }, i * 200);
+    }
+    
+    // Second ring after pause
+    setTimeout(() => {
+        for (let i = 0; i < bellFreqs.length; i++) {
+            setTimeout(() => {
+                if (!ringingAlarmId && !window.isPreviewing) return;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.value = bellFreqs[i];
+                gain.gain.value = 0.6 - (i * 0.05);
+                osc.type = 'sine';
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.35);
+                osc.stop(audioContext.currentTime + 0.35);
+            }, i * 180);
+        }
+    }, 1500);
+},
+        // 📱 IPHONE ALARM
+        'iphone': () => {
+            const pattern = [1000, 1200, 1000, 1200, 1400, 1600, 1400, 1200];
+            pattern.forEach((freq, i) => {
+                setTimeout(() => {
+                    if (!ringingAlarmId && !window.isPreviewing) return;
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.value = 0.85;
+                    osc.type = 'triangle';
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.2);
+                    osc.stop(audioContext.currentTime + 0.2);
+                }, i * 230);
+            });
         },
         
-        // 🐦 BIRDS + NATURE - Morning birds chirping
-        'birds': () => {
-            // Birds chirping effect - random high frequencies
+        // 📱 SAMSUNG ALARM
+        'samsung': () => {
+            const pattern = [800, 1000, 800, 1200, 800, 1400, 1000, 1500];
+            pattern.forEach((freq, i) => {
+                setTimeout(() => {
+                    if (!ringingAlarmId && !window.isPreviewing) return;
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.value = 0.85;
+                    osc.type = 'square';
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.25);
+                    osc.stop(audioContext.currentTime + 0.25);
+                }, i * 260);
+            });
+        },
+        
+        // ⏰ REAL ALARM (Loud)
+        'realalarm': () => {
             for (let i = 0; i < 8; i++) {
                 setTimeout(() => {
                     if (!ringingAlarmId && !window.isPreviewing) return;
@@ -812,164 +938,88 @@ function playRingtoneByType(type) {
                     const gain = audioContext.createGain();
                     osc.connect(gain);
                     gain.connect(audioContext.destination);
-                    const birdFreq = [2200, 2400, 2600, 2800, 3000][Math.floor(Math.random() * 5)];
+                    osc.frequency.value = i % 2 === 0 ? 1300 : 1500;
+                    gain.gain.value = 0.9;
+                    osc.type = 'square';
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.25);
+                    osc.stop(audioContext.currentTime + 0.25);
+                }, i * 280);
+            }
+        },
+        
+        // 🎸 GUITAR
+        'guitar': () => {
+            const notes = [196.00, 246.94, 293.66, 329.63, 293.66, 246.94, 196.00];
+            notes.forEach((freq, i) => {
+                setTimeout(() => {
+                    if (!ringingAlarmId && !window.isPreviewing) return;
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.value = 0.7;
+                    osc.type = 'sine';
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.35);
+                    osc.stop(audioContext.currentTime + 0.35);
+                }, i * 350);
+            });
+        },
+        
+        // 🎹 PIANO
+        'piano': () => {
+            const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 349.23, 329.63, 293.66, 261.63];
+            notes.forEach((freq, i) => {
+                setTimeout(() => {
+                    if (!ringingAlarmId && !window.isPreviewing) return;
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.value = 0.7;
+                    osc.type = 'triangle';
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.35);
+                    osc.stop(audioContext.currentTime + 0.35);
+                }, i * 300);
+            });
+        },
+        
+        // 🐦 BIRDS NATURE
+        'birds': () => {
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    if (!ringingAlarmId && !window.isPreviewing) return;
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    const birdFreq = [1800, 2000, 2200, 2500, 2800, 3000][Math.floor(Math.random() * 6)];
                     osc.frequency.value = birdFreq;
-                    gain.gain.value = 0.15;
+                    gain.gain.value = 0.6;
                     osc.type = 'sine';
                     osc.start();
                     gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.15);
                     osc.stop(audioContext.currentTime + 0.15);
-                }, i * 250);
-            }
-            // Add nature melody
-            setTimeout(() => {
-                if (!ringingAlarmId && !window.isPreviewing) return;
-                const natureMelody = [
-                    { freq: 659.25, duration: 0.4 }, { freq: 523.25, duration: 0.4 },
-                    { freq: 659.25, duration: 0.5 }, { freq: 783.99, duration: 0.6 }
-                ];
-                let timeOffset = 0;
-                natureMelody.forEach((note) => {
-                    setTimeout(() => {
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        osc.connect(gain);
-                        gain.connect(audioContext.destination);
-                        osc.type = 'sine';
-                        osc.frequency.value = note.freq;
-                        gain.gain.value = 0.25;
-                        osc.start();
-                        gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + note.duration);
-                        osc.stop(audioContext.currentTime + note.duration);
-                    }, timeOffset * 1000);
-                    timeOffset += note.duration;
-                });
-            }, 200);
-        },
-        
-        // ⏰ REAL ALARM CLOCK - Traditional mechanical alarm
-        'realalarm': () => {
-            // Classic double ring like old alarm clocks
-            for (let i = 0; i < 6; i++) {
-                setTimeout(() => {
-                    if (!ringingAlarmId && !window.isPreviewing) return;
-                    const osc = audioContext.createOscillator();
-                    const gain = audioContext.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioContext.destination);
-                    osc.frequency.value = i % 2 === 0 ? 1200 : 1400;
-                    gain.gain.value = 0.5;
-                    osc.start();
-                    gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.25);
-                    osc.stop(audioContext.currentTime + 0.25);
-                }, i * 350);
+                }, i * 200);
             }
         },
         
-        // 🕰️ CLASSIC CLOCK - Grandfather clock chime
-        'classicclock': () => {
-            const chimeNotes = [
-                { freq: 523.25, duration: 0.5 }, // C
-                { freq: 659.25, duration: 0.5 }, // E
-                { freq: 783.99, duration: 0.5 }, // G
-                { freq: 1046.50, duration: 0.8 }, // C (high)
-                { freq: 783.99, duration: 0.4 }, // G
-                { freq: 659.25, duration: 0.4 }, // E
-                { freq: 523.25, duration: 0.8 }  // C
-            ];
-            playMelody(chimeNotes, 0.4, 'sine');
-        },
-        
-        // 📱 MODERN DIGITAL - Smartphone alarm
-        'digital': () => {
-            const digitalBeeps = [
-                { freq: 1100, duration: 0.15 }, { freq: 0, duration: 0.1 },
-                { freq: 1100, duration: 0.15 }, { freq: 0, duration: 0.1 },
-                { freq: 1100, duration: 0.15 }, { freq: 0, duration: 0.1 },
-                { freq: 1500, duration: 0.3 }, { freq: 0, duration: 0.15 },
-                { freq: 1500, duration: 0.3 }
-            ];
-            let timeOffset = 0;
-            digitalBeeps.forEach((note) => {
-                setTimeout(() => {
-                    if (!ringingAlarmId && !window.isPreviewing) return;
-                    if (note.freq === 0) return;
-                    const osc = audioContext.createOscillator();
-                    const gain = audioContext.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioContext.destination);
-                    osc.frequency.value = note.freq;
-                    gain.gain.value = 0.5;
-                    osc.start();
-                    gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + note.duration);
-                    osc.stop(audioContext.currentTime + note.duration);
-                }, timeOffset * 1000);
-                timeOffset += note.duration + 0.05;
-            });
-        },
-        
-        // 🔔 MORNING CHIME - Gentle wake up
-        'morningchime': () => {
-            const chime = [
-                { freq: 659.25, duration: 0.3 }, { freq: 783.99, duration: 0.3 },
-                { freq: 1046.50, duration: 0.5 }, { freq: 783.99, duration: 0.3 },
-                { freq: 659.25, duration: 0.3 }, { freq: 523.25, duration: 0.6 }
-            ];
-            playMelody(chime, 0.3, 'sine');
-        },
-        
-        // 🌅 SUNRISE MELODY - Peaceful
-        'sunrise': () => {
-            const sunrise = [
-                { freq: 440.00, duration: 0.4 }, { freq: 493.88, duration: 0.4 },
-                { freq: 523.25, duration: 0.5 }, { freq: 587.33, duration: 0.5 },
-                { freq: 659.25, duration: 0.6 }, { freq: 587.33, duration: 0.4 },
-                { freq: 523.25, duration: 0.4 }, { freq: 440.00, duration: 0.8 }
-            ];
-            playMelody(sunrise, 0.35, 'triangle');
-        },
-        
-        // 💤 DREAMY - Soft piano for gentle wake
-        'dreamy': () => {
-            const dreamy = [
-                { freq: 261.63, duration: 0.6 }, { freq: 329.63, duration: 0.6 },
-                { freq: 392.00, duration: 0.8 }, { freq: 329.63, duration: 0.6 },
-                { freq: 261.63, duration: 0.6 }, { freq: 196.00, duration: 1.0 }
-            ];
-            playMelody(dreamy, 0.25, 'triangle');
-        },
-        
-        // ⚡ ENERGETIC - Fast upbeat alarm
-        'energetic': () => {
-            const upbeat = [
-                { freq: 880.00, duration: 0.15 }, { freq: 987.77, duration: 0.15 },
-                { freq: 1108.73, duration: 0.15 }, { freq: 1318.52, duration: 0.2 },
-                { freq: 1108.73, duration: 0.15 }, { freq: 987.77, duration: 0.15 },
-                { freq: 880.00, duration: 0.15 }, { freq: 1318.52, duration: 0.3 }
-            ];
-            playMelody(upbeat, 0.4);
+        // 🎵 CUSTOM RINGTONE
+        'custom': () => {
+            if (customAudioUrl) {
+                const audio = new Audio(customAudioUrl);
+                audio.volume = 1.0;
+                audio.play();
+                if (window.isPreviewing) {
+                    setTimeout(() => audio.pause(), 2000);
+                }
+            }
         }
     };
-    
-    function playMelody(melody, volume = 0.35, oscType = 'sine') {
-        let timeOffset = 0;
-        melody.forEach((note) => {
-            setTimeout(() => {
-                if (!ringingAlarmId && !window.isPreviewing) return;
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
-                osc.connect(gain);
-                gain.connect(audioContext.destination);
-                osc.type = oscType;
-                osc.frequency.value = note.freq;
-                gain.gain.value = volume;
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + note.duration);
-                osc.stop(audioContext.currentTime + note.duration);
-            }, timeOffset * 1000);
-            timeOffset += note.duration;
-        });
-    }
     
     if (ringtones[type]) {
         ringtones[type]();
@@ -977,7 +1027,7 @@ function playRingtoneByType(type) {
         ringtones['realalarm']();
     }
 }
-  
+    
     // Continuous ringing
     function startContinuousRing(ringtoneType) {
         function ring() {
@@ -1181,6 +1231,48 @@ function previewRingtone() {
 
 window.isPreviewing = false;
 
+// Custom ringtone upload
+let customAudioUrl = null;
+
+async function uploadCustomRingtone() {
+    const fileInput = document.getElementById('customRingtone');
+    const file = fileInput.files[0];
+    
+    if (file) {
+        if (customAudioUrl) {
+            URL.revokeObjectURL(customAudioUrl);
+        }
+        customAudioUrl = URL.createObjectURL(file);
+        
+        const select = document.getElementById('modalRingtone');
+        
+        let customOption = Array.from(select.options).find(opt => opt.value === 'custom');
+        if (customOption) {
+            customOption.textContent = '🎵 ' + file.name.slice(0, 20);
+            select.value = 'custom';
+        } else {
+            const option = document.createElement('option');
+            option.value = 'custom';
+            option.textContent = '🎵 ' + file.name.slice(0, 20);
+            select.appendChild(option);
+            select.value = 'custom';
+        }
+        
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+        }
+        
+        const audio = new Audio(customAudioUrl);
+        audio.volume = 1.0;
+        audio.play().catch(e => console.log("Play error:", e));
+        setTimeout(() => audio.pause(), 2000);
+        
+        showToast("✅ Custom ringtone added! Tap again to preview");
+    }
+}
     init();
     // PWA Registration with Auto-Update Check
 if ('serviceWorker' in navigator) {
