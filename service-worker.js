@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alarm-app-v3';
+const CACHE_NAME = 'alarm-app-v4';
 const ASSETS = [
   './',
   'index.html',
@@ -28,6 +28,8 @@ self.addEventListener('activate', (event) => {
     })
   );
 });
+
+//  all pages 
 
 // Fetch Assets
 self.addEventListener('fetch', (event) => {
