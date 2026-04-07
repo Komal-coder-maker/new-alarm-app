@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Professional Alarm App</title>
+
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a2e">
+<link rel="apple-touch-icon" href="app.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         * {
             margin: 0;
@@ -35,14 +41,16 @@
 
         .header h1 {
             font-size: 2em;
-            font-weight: 700;
+            font-weight: 800;
             color: #fff;
+            font-family: cursive;
         }
 
         .header p {
-            font-size: 0.85em;
+            font-size: 17px;
             opacity: 0.7;
             margin-top: 5px;
+            color: wheat;
         }
 
         /* Digital Clock */
@@ -64,10 +72,11 @@
         }
 
         #clockDate {
-            font-size: 0.9em;
-            opacity: 0.6;
+            font-size: 20px;
+            
             margin-top: 8px;
-            color: #1a1a2e;
+            color: black;
+            font-family: cursive;
         }
 
         /* Add Alarm Button */
@@ -125,23 +134,27 @@
         }
 
         .alarm-ampm {
-            font-size: 0.8em;
-            margin-left: 5px;
-            color: #e74c3c;
+            font-size: 1rem;
+            margin-left: 0px;
+            color: red;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .alarm-days {
-            font-size: 0.75em;
-            opacity: 0.6;
+            font-size: 1rem;
+            font-weight: 400;
+            font-family: Georgia, 'Times New Roman', Times, serif;
             margin-top: 5px;
             color: #1a1a2e;
         }
 
         .alarm-ringtone {
-            font-size: 0.75em;
-            opacity: 0.6;
+            font-size: 1rem;
+            
             margin-top: 3px;
-            color: #1a1a2e;
+            color: black;
+             font-weight: 400;
+            font-family: Georgia, 'Times New Roman', Times, serif;
         }
 
         .alarm-actions {
@@ -227,10 +240,11 @@
         .empty-state {
             text-align: center;
             padding: 50px;
-            opacity: 0.6;
+            font-size: 18px;
             background: #fff;
             border-radius: 20px;
-            color: #1a1a2e;
+            color:black;
+            font-weight: 900;
         }
 
         /* Modal for Edit/Add */
@@ -412,7 +426,7 @@
 <div class="app-container">
     <div class="header">
         <h1>⏰ Alarm App</h1>
-        <p>Edit | Snooze Options | Save</p>
+        <p>Rise and shine ! The world is waiting for you ☀️</p>
     </div>
 
     <!-- Digital Clock -->
@@ -424,9 +438,9 @@
     <!-- Add Alarm Button -->
     <button class="add-alarm-btn" onclick="openAddModal()">+ ADD NEW ALARM</button>
 
-    <!-- Alarm List -->
+    
     <div id="alarmList" class="alarm-list">
-        <div class="empty-state">📭 No alarms yet<br>Click + ADD NEW ALARM</div>
+        <div class="empty-state"> No alarms yet<br>Click + ADD NEW ALARM</div>
     </div>
 </div>
 
@@ -447,11 +461,13 @@
             <button class="modal-day-btn everyday-modal-btn" onclick="selectEverydayModal()">Everyday</button>
         </div>
         
-        <select id="modalRingtone" class="modal-ringtone">
-            <option value="beep">🔔 Classic Beep</option>
-            <option value="digital">📱 Digital Alarm</option>
-            <option value="gentle">🌅 Gentle Wake</option>
-        </select>
+       <select id="modalRingtone" class="modal-ringtone">
+    <option value="classic" selected>🎸 Classic Guitar</option>
+    <option value="flute">🎵 Flute Melody</option>
+    <option value="piano">🎹 Piano Instrumental</option>
+    <option value="violin">🎻 Violin Melody</option>
+    <option value="bells">🔔 Crystal Bells</option>
+</select>
         
         <div class="modal-buttons">
             <button class="save-btn" onclick="saveAlarmFromModal()">Save</button>
@@ -523,11 +539,16 @@
         return days.map(d => dayNames[d]).join(', ');
     }
 
-    // Get ringtone name
     function getRingtoneName(type) {
-        const names = { 'beep': 'Classic Beep', 'digital': 'Digital Alarm', 'gentle': 'Gentle Wake' };
-        return names[type] || 'Classic Beep';
-    }
+    const names = { 
+        'classic': 'Classic Guitar', 
+        'flute': 'Flute Melody', 
+        'piano': 'Piano Instrumental',
+        'violin': 'Violin Melody',
+        'bells': 'Crystal Bells'
+    };
+    return names[type] || 'Classic Guitar';
+}
 
     // Render alarms
     function renderAlarms() {
@@ -585,6 +606,7 @@
         document.querySelectorAll('.modal-day-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('modalRingtone').value = 'beep';
         document.getElementById('alarmModal').style.display = 'flex';
+        document.getElementById('modalRingtone').value = 'classic';
     }
 
     // Open Edit Modal
@@ -710,66 +732,164 @@
         }
     }
 
-    // Play ringtone - ALL 3 WORKING
-    function playRingtoneByType(type) {
-        if (!audioContext) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-        
-        const now = audioContext.currentTime;
-        
-        if (type === 'beep') {
-            // Classic beep - continuous beep sound
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            osc.frequency.value = 880;
-            gain.gain.value = 0.5;
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.00001, now + 0.6);
-            osc.stop(now + 0.6);
-        } 
-        else if (type === 'digital') {
-            // Digital alarm - triple beep
-            for (let i = 0; i < 3; i++) {
-                setTimeout(() => {
-                    if (!ringingAlarmId) return;
-                    const osc = audioContext.createOscillator();
-                    const gain = audioContext.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioContext.destination);
-                    osc.frequency.value = 1046.50;
-                    gain.gain.value = 0.4;
-                    osc.start();
-                    gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.25);
-                    osc.stop(audioContext.currentTime + 0.25);
-                }, i * 350);
-            }
-        }
-        else if (type === 'gentle') {
-            // Gentle wake - melody
-            const freqs = [523.25, 587.33, 659.25, 523.25, 783.99, 880.00];
-            freqs.forEach((freq, i) => {
-                setTimeout(() => {
-                    if (!ringingAlarmId) return;
-                    const osc = audioContext.createOscillator();
-                    const gain = audioContext.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioContext.destination);
-                    osc.frequency.value = freq;
-                    gain.gain.value = 0.3;
-                    osc.start();
-                    gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.4);
-                    osc.stop(audioContext.currentTime + 0.4);
-                }, i * 400);
-            });
-        }
+    // Play ringtone - INSTRUMENTAL MUSIC RINGTONES
+function playRingtoneByType(type) {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
+    
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    
+    const now = audioContext.currentTime;
+    
+    if (type === 'classic') {
+        // 🎸 CLASSIC GUITAR - Soft instrumental
+        const guitarMelody = [
+            { freq: 196.00, duration: 0.4 },  // G3
+            { freq: 220.00, duration: 0.4 },  // A3
+            { freq: 246.94, duration: 0.4 },  // B3
+            { freq: 261.63, duration: 0.6 },  // C4
+            { freq: 220.00, duration: 0.4 },  // A3
+            { freq: 196.00, duration: 0.8 }   // G3
+        ];
+        
+        let timeOffset = 0;
+        guitarMelody.forEach((note) => {
+            setTimeout(() => {
+                if (!ringingAlarmId) return;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sine';  // Smooth sine wave for guitar-like sound
+                osc.frequency.value = note.freq;
+                gain.gain.value = 0.3;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + note.duration);
+                osc.stop(audioContext.currentTime + note.duration);
+            }, timeOffset * 1000);
+            timeOffset += note.duration;
+        });
+    } 
+    else if (type === 'flute') {
+        // 🎵 FLUTE MELODY - Peaceful & calming
+        const fluteMelody = [
+            { freq: 523.25, duration: 0.5 },  // C5
+            { freq: 587.33, duration: 0.3 },  // D5
+            { freq: 659.25, duration: 0.4 },  // E5
+            { freq: 523.25, duration: 0.5 },  // C5
+            { freq: 587.33, duration: 0.3 },  // D5
+            { freq: 659.25, duration: 0.8 }   // E5
+        ];
+        
+        let timeOffset = 0;
+        fluteMelody.forEach((note) => {
+            setTimeout(() => {
+                if (!ringingAlarmId) return;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sine';
+                osc.frequency.value = note.freq;
+                gain.gain.value = 0.28;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + note.duration);
+                osc.stop(audioContext.currentTime + note.duration);
+            }, timeOffset * 1000);
+            timeOffset += note.duration;
+        });
+    }
+    else if (type === 'piano') {
+        // 🎹 PIANO INSTRUMENTAL - Classic wake up tune
+        const pianoTune = [
+            { freq: 261.63, duration: 0.3 },  // C4
+            { freq: 293.66, duration: 0.3 },  // D4
+            { freq: 329.63, duration: 0.3 },  // E4
+            { freq: 349.23, duration: 0.3 },  // F4
+            { freq: 392.00, duration: 0.3 },  // G4
+            { freq: 440.00, duration: 0.3 },  // A4
+            { freq: 493.88, duration: 0.6 }   // B4
+        ];
+        
+        let timeOffset = 0;
+        pianoTune.forEach((note) => {
+            setTimeout(() => {
+                if (!ringingAlarmId) return;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'triangle';  // Piano-like sound
+                osc.frequency.value = note.freq;
+                gain.gain.value = 0.32;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + note.duration);
+                osc.stop(audioContext.currentTime + note.duration);
+            }, timeOffset * 1000);
+            timeOffset += note.duration;
+        });
+    }
+    else if (type === 'violin') {
+        // 🎻 VIOLIN MELODY - Emotional & beautiful
+        const violinMelody = [
+            { freq: 440.00, duration: 0.6 },  // A4
+            { freq: 493.88, duration: 0.4 },  // B4
+            { freq: 523.25, duration: 0.5 },  // C5
+            { freq: 493.88, duration: 0.4 },  // B4
+            { freq: 440.00, duration: 0.3 },  // A4
+            { freq: 392.00, duration: 0.8 }   // G4
+        ];
+        
+        let timeOffset = 0;
+        violinMelody.forEach((note) => {
+            setTimeout(() => {
+                if (!ringingAlarmId) return;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sawtooth';  // Rich violin-like tone
+                osc.frequency.value = note.freq;
+                gain.gain.value = 0.26;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + note.duration);
+                osc.stop(audioContext.currentTime + note.duration);
+            }, timeOffset * 1000);
+            timeOffset += note.duration;
+        });
+    }
+    else if (type === 'bells') {
+        // 🔔 BELLS INSTRUMENTAL - Crystal clear
+        const bellsMelody = [
+            { freq: 1046.50, duration: 0.4 }, // C6
+            { freq: 1174.66, duration: 0.4 }, // D6
+            { freq: 1318.52, duration: 0.4 }, // E6
+            { freq: 1396.91, duration: 0.4 }, // F6
+            { freq: 1567.98, duration: 0.6 }  // G6
+        ];
+        
+        let timeOffset = 0;
+        bellsMelody.forEach((note) => {
+            setTimeout(() => {
+                if (!ringingAlarmId) return;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = 'sine';
+                osc.frequency.value = note.freq;
+                gain.gain.value = 0.22;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + note.duration);
+                osc.stop(audioContext.currentTime + note.duration);
+            }, timeOffset * 1000);
+            timeOffset += note.duration;
+        });
+    }
+}
 
     // Continuous ringing
     function startContinuousRing(ringtoneType) {
@@ -948,6 +1068,27 @@
     }
 
     init();
+    // PWA Registration with Auto-Update Check
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').then(reg => {
+            // Check for updates every 1 minute
+            setInterval(() => { reg.update(); }, 60000);
+
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        if (confirm("New update available! Refresh to apply changes?")) {
+                            newWorker.postMessage({ action: 'skipWaiting' });
+                            window.location.reload();
+                        }
+                    }
+                });
+            });
+        }).catch(err => console.log("Service Worker Error:", err));
+    });
+}
 </script>
 
 </body>
